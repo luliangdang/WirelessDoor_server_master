@@ -14,3 +14,8 @@ F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\Wireless
 F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\obj\Debug\WirelessDoor_server_master.csproj.CopyComplete
 F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\obj\Debug\WirelessDoor_server_master.exe
 F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\obj\Debug\WirelessDoor_server_master.pdb
+F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\obj\Debug\WirelessDoor_server_master.PersonForm.resources
+F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\obj\Debug\WirelessDoor_server_master.RoomForm.resources
+F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\bin\Debug\Newtonsoft.Json.dll
+F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\bin\Debug\qcloudsms_csharp.dll
+F:\文档\研究生项目\无线门禁系统\WirelessDoor_server_master\WirelessDoor_server_master\bin\Debug\Newtonsoft.Json.xml
