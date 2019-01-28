@@ -141,6 +141,7 @@
             this.dgvPerson.Name = "dgvPerson";
             this.dgvPerson.ReadOnly = true;
             this.dgvPerson.RowTemplate.Height = 23;
+            this.dgvPerson.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvPerson.Size = new System.Drawing.Size(586, 193);
             this.dgvPerson.TabIndex = 0;
             this.dgvPerson.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvPerson_CellDoubleClick);

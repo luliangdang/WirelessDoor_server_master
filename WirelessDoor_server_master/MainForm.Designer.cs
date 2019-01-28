@@ -35,6 +35,7 @@
             this.会议室管理ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新申请信息ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.清除显示日志ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.刷新状态ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.dgvReservation = new System.Windows.Forms.DataGridView();
@@ -44,8 +45,11 @@
             this.startTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.finalTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.reason = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.rtReason = new System.Windows.Forms.RichTextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.dgvRoom = new System.Windows.Forms.DataGridView();
+            this.roomID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.roomState = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -53,8 +57,6 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.rtMessage = new System.Windows.Forms.RichTextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.rtReason = new System.Windows.Forms.RichTextBox();
             this.btCancel = new System.Windows.Forms.Button();
             this.btAgree = new System.Windows.Forms.Button();
             this.tbEndTime = new System.Windows.Forms.TextBox();
@@ -69,6 +71,9 @@
             this.rtLogo = new System.Windows.Forms.RichTextBox();
             this.lbOnline = new System.Windows.Forms.ListBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.cmsdgvRoom = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.刷新表格信息ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.刷新状态ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -76,11 +81,13 @@
             this.splitContainer1.SuspendLayout();
             this.groupBox5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvReservation)).BeginInit();
+            this.groupBox6.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRoom)).BeginInit();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.cmsdgvRoom.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -90,7 +97,8 @@
             this.会议室管理ToolStripMenuItem,
             this.会议室管理ToolStripMenuItem1,
             this.刷新申请信息ToolStripMenuItem,
-            this.清除显示日志ToolStripMenuItem});
+            this.清除显示日志ToolStripMenuItem,
+            this.刷新状态ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(762, 25);
@@ -123,7 +131,7 @@
             this.刷新申请信息ToolStripMenuItem.Name = "刷新申请信息ToolStripMenuItem";
             this.刷新申请信息ToolStripMenuItem.Size = new System.Drawing.Size(92, 21);
             this.刷新申请信息ToolStripMenuItem.Text = "刷新表格信息";
-            this.刷新申请信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新申请信息ToolStripMenuItem_Click);
+            this.刷新申请信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新表格信息ToolStripMenuItem_Click);
             // 
             // 清除显示日志ToolStripMenuItem
             // 
@@ -131,6 +139,13 @@
             this.清除显示日志ToolStripMenuItem.Size = new System.Drawing.Size(92, 21);
             this.清除显示日志ToolStripMenuItem.Text = "清除显示日志";
             this.清除显示日志ToolStripMenuItem.Click += new System.EventHandler(this.清除显示日志ToolStripMenuItem_Click);
+            // 
+            // 刷新状态ToolStripMenuItem
+            // 
+            this.刷新状态ToolStripMenuItem.Name = "刷新状态ToolStripMenuItem";
+            this.刷新状态ToolStripMenuItem.Size = new System.Drawing.Size(68, 21);
+            this.刷新状态ToolStripMenuItem.Text = "刷新状态";
+            this.刷新状态ToolStripMenuItem.Click += new System.EventHandler(this.刷新状态ToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -145,6 +160,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.groupBox6);
             this.splitContainer1.Panel2.Controls.Add(this.groupBox4);
             this.splitContainer1.Panel2.Controls.Add(this.groupBox3);
             this.splitContainer1.Panel2.Controls.Add(this.groupBox2);
@@ -182,6 +198,7 @@
             this.dgvReservation.Name = "dgvReservation";
             this.dgvReservation.ReadOnly = true;
             this.dgvReservation.RowTemplate.Height = 23;
+            this.dgvReservation.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvReservation.Size = new System.Drawing.Size(746, 208);
             this.dgvReservation.TabIndex = 1;
             this.dgvReservation.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvReservation_CellDoubleClick);
@@ -222,12 +239,32 @@
             this.reason.Name = "reason";
             this.reason.ReadOnly = true;
             // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.rtReason);
+            this.groupBox6.Location = new System.Drawing.Point(630, 7);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(117, 100);
+            this.groupBox6.TabIndex = 4;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "申请理由";
+            // 
+            // rtReason
+            // 
+            this.rtReason.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtReason.Location = new System.Drawing.Point(3, 17);
+            this.rtReason.Name = "rtReason";
+            this.rtReason.ReadOnly = true;
+            this.rtReason.Size = new System.Drawing.Size(111, 80);
+            this.rtReason.TabIndex = 11;
+            this.rtReason.Text = "";
+            // 
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.dgvRoom);
             this.groupBox4.Location = new System.Drawing.Point(4, 7);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(368, 336);
+            this.groupBox4.Size = new System.Drawing.Size(416, 336);
             this.groupBox4.TabIndex = 3;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "会议室信息";
@@ -236,10 +273,10 @@
             // 
             this.dgvRoom.AllowUserToAddRows = false;
             this.dgvRoom.AllowUserToDeleteRows = false;
-            this.dgvRoom.AllowUserToOrderColumns = true;
             this.dgvRoom.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvRoom.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvRoom.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.roomID,
             this.dataGridViewTextBoxColumn1,
             this.roomState,
             this.dataGridViewTextBoxColumn2,
@@ -249,8 +286,16 @@
             this.dgvRoom.Name = "dgvRoom";
             this.dgvRoom.ReadOnly = true;
             this.dgvRoom.RowTemplate.Height = 23;
-            this.dgvRoom.Size = new System.Drawing.Size(362, 316);
+            this.dgvRoom.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvRoom.Size = new System.Drawing.Size(410, 316);
             this.dgvRoom.TabIndex = 2;
+            this.dgvRoom.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgvRoom_CellMouseDown);
+            // 
+            // roomID
+            // 
+            this.roomID.HeaderText = "编号";
+            this.roomID.Name = "roomID";
+            this.roomID.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn1
             // 
@@ -266,7 +311,7 @@
             // 
             // dataGridViewTextBoxColumn2
             // 
-            this.dataGridViewTextBoxColumn2.HeaderText = "网络状态";
+            this.dataGridViewTextBoxColumn2.HeaderText = "网络";
             this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             this.dataGridViewTextBoxColumn2.ReadOnly = true;
             // 
@@ -279,9 +324,9 @@
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.rtMessage);
-            this.groupBox3.Location = new System.Drawing.Point(652, 7);
+            this.groupBox3.Location = new System.Drawing.Point(633, 108);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(98, 193);
+            this.groupBox3.Size = new System.Drawing.Size(117, 92);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "处理意见";
@@ -291,14 +336,12 @@
             this.rtMessage.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtMessage.Location = new System.Drawing.Point(3, 17);
             this.rtMessage.Name = "rtMessage";
-            this.rtMessage.Size = new System.Drawing.Size(92, 173);
+            this.rtMessage.Size = new System.Drawing.Size(111, 72);
             this.rtMessage.TabIndex = 0;
             this.rtMessage.Text = "";
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Controls.Add(this.rtReason);
             this.groupBox2.Controls.Add(this.btCancel);
             this.groupBox2.Controls.Add(this.btAgree);
             this.groupBox2.Controls.Add(this.tbEndTime);
@@ -309,34 +352,16 @@
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.tbRoomName);
             this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Location = new System.Drawing.Point(375, 3);
+            this.groupBox2.Location = new System.Drawing.Point(426, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(271, 196);
+            this.groupBox2.Size = new System.Drawing.Size(198, 196);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "预约信息";
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(113, 17);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(53, 12);
-            this.label5.TabIndex = 11;
-            this.label5.Text = "申请理由";
-            // 
-            // rtReason
-            // 
-            this.rtReason.Location = new System.Drawing.Point(113, 33);
-            this.rtReason.Name = "rtReason";
-            this.rtReason.ReadOnly = true;
-            this.rtReason.Size = new System.Drawing.Size(155, 120);
-            this.rtReason.TabIndex = 10;
-            this.rtReason.Text = "";
-            // 
             // btCancel
             // 
-            this.btCancel.Location = new System.Drawing.Point(193, 159);
+            this.btCancel.Location = new System.Drawing.Point(113, 77);
             this.btCancel.Name = "btCancel";
             this.btCancel.Size = new System.Drawing.Size(75, 23);
             this.btCancel.TabIndex = 9;
@@ -346,7 +371,7 @@
             // 
             // btAgree
             // 
-            this.btAgree.Location = new System.Drawing.Point(113, 159);
+            this.btAgree.Location = new System.Drawing.Point(113, 33);
             this.btAgree.Name = "btAgree";
             this.btAgree.Size = new System.Drawing.Size(75, 23);
             this.btAgree.TabIndex = 8;
@@ -425,9 +450,9 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.rtLogo);
-            this.groupBox1.Location = new System.Drawing.Point(375, 203);
+            this.groupBox1.Location = new System.Drawing.Point(426, 203);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(384, 143);
+            this.groupBox1.Size = new System.Drawing.Size(333, 143);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "日志";
@@ -438,7 +463,7 @@
             this.rtLogo.Location = new System.Drawing.Point(3, 17);
             this.rtLogo.Name = "rtLogo";
             this.rtLogo.ReadOnly = true;
-            this.rtLogo.Size = new System.Drawing.Size(378, 123);
+            this.rtLogo.Size = new System.Drawing.Size(327, 123);
             this.rtLogo.TabIndex = 0;
             this.rtLogo.Text = "";
             // 
@@ -455,6 +480,28 @@
             // 
             this.timer1.Interval = 600000;
             // 
+            // cmsdgvRoom
+            // 
+            this.cmsdgvRoom.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.刷新表格信息ToolStripMenuItem,
+            this.刷新状态ToolStripMenuItem1});
+            this.cmsdgvRoom.Name = "cmsdgvRoom";
+            this.cmsdgvRoom.Size = new System.Drawing.Size(181, 70);
+            // 
+            // 刷新表格信息ToolStripMenuItem
+            // 
+            this.刷新表格信息ToolStripMenuItem.Name = "刷新表格信息ToolStripMenuItem";
+            this.刷新表格信息ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.刷新表格信息ToolStripMenuItem.Text = "刷新表格信息";
+            this.刷新表格信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新表格信息ToolStripMenuItem_Click);
+            // 
+            // 刷新状态ToolStripMenuItem1
+            // 
+            this.刷新状态ToolStripMenuItem1.Name = "刷新状态ToolStripMenuItem1";
+            this.刷新状态ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.刷新状态ToolStripMenuItem1.Text = "刷新状态";
+            this.刷新状态ToolStripMenuItem1.Click += new System.EventHandler(this.刷新状态ToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -464,6 +511,8 @@
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "MainForm";
             this.Text = "智能会议室预约系统";
             this.Load += new System.EventHandler(this.MainForm_Load);
@@ -475,12 +524,14 @@
             this.splitContainer1.ResumeLayout(false);
             this.groupBox5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvReservation)).EndInit();
+            this.groupBox6.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvRoom)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
+            this.cmsdgvRoom.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -509,8 +560,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btCancel;
         private System.Windows.Forms.Button btAgree;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.RichTextBox rtReason;
         private System.Windows.Forms.ToolStripMenuItem 刷新申请信息ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 清除显示日志ToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBox5;
@@ -523,11 +572,18 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn reason;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.DataGridView dgvRoom;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem 刷新状态ToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip cmsdgvRoom;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.RichTextBox rtReason;
+        private System.Windows.Forms.DataGridViewTextBoxColumn roomID;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn roomState;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private System.Windows.Forms.DataGridViewTextBoxColumn netaddres;
-        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem 刷新表格信息ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 刷新状态ToolStripMenuItem1;
     }
 }
 

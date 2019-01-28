@@ -23,9 +23,8 @@ namespace WirelessDoor_server_master
         //服务器地址
         //IPAddress[] HOST = Dns.GetHostAddresses("k806034232.6655.la");
         //服务器地址
-        //IPAddress HOST = IPAddress.Parse("106.91.18.158");
-        IPAddress HOST = IPAddress.Parse("172.20.10.3");
-        //IPAddress HOST = IPAddress.Parse("172.19.22.153");
+        //IPAddress HOST = IPAddress.Parse("172.20.10.3");
+        IPAddress HOST = IPAddress.Parse("172.19.22.153");
         //服务器端口号
         private const int port = 8086;
         //会议室接收标记
@@ -42,14 +41,17 @@ namespace WirelessDoor_server_master
         //数据库信息
         string database = "room";
         string username = "root";
-        string passwd = "Dll960220";
-        //string passwd = "LL960220";
+        //string passwd = "Dll960220";
+        string passwd = "LL960220";
 
         //短信发送appid
         int appid = 1400178112;
         string appkey = "6402f72c5c2d15fac7f124d78d6f4759";
         int[] templateId = { 265637, 270334, 265636, 266224 };//注册，预约成功，失败，提醒
         string smsSign = "会易云";
+
+        //数据接收标志
+        bool reciveGet = false;
 
         public MainForm()
         {
@@ -185,7 +187,6 @@ namespace WirelessDoor_server_master
                                                          ";Username=" + username +
                                                          ";Password=" + passwd + ";");
             dgvReservation.Rows.Clear();
-            dgvRoom.Rows.Clear();
             try
             {
                 //连接数据库
@@ -223,7 +224,7 @@ namespace WirelessDoor_server_master
                 myconn.Dispose();
                 myconn.Close();
             }
-
+            dgvRoom.Rows.Clear();
             try
             {
                 //打开数据库
@@ -241,10 +242,11 @@ namespace WirelessDoor_server_master
                 {
                     int index = dgvRoom.Rows.Add();
 
-                    dgvRoom.Rows[index].Cells[0].Value = reader[1].ToString();
-                    dgvRoom.Rows[index].Cells[1].Value = reader[2].ToString();
-                    dgvRoom.Rows[index].Cells[2].Value = reader[3].ToString();
-                    dgvRoom.Rows[index].Cells[3].Value = reader[4].ToString();
+                    dgvRoom.Rows[index].Cells[0].Value = reader[0].ToString();
+                    dgvRoom.Rows[index].Cells[1].Value = reader[1].ToString();
+                    dgvRoom.Rows[index].Cells[2].Value = reader[2].ToString();
+                    dgvRoom.Rows[index].Cells[3].Value = reader[3].ToString();
+                    dgvRoom.Rows[index].Cells[4].Value = reader[4].ToString();
                 }
                 //释放reader的资源
                 reader.Dispose();
@@ -502,6 +504,7 @@ namespace WirelessDoor_server_master
                             {
                                 case 1:     //联机回复
                                     {
+                                        reciveGet = true;
 										UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
                                         break;
                                     }
@@ -542,11 +545,12 @@ namespace WirelessDoor_server_master
                                                     arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
                                                     dict[ip].Send(arrMsg);
                                                 }
-                                                else
-                                                {
-                                                    arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + "000000000002\r\n");
-                                                    dict[ip].Send(arrMsg);
-                                                }
+                                            }
+                                            else
+                                            {
+                                                arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + "000000000002\r\n");
+                                                ShowMsg(arrMsg.ToString());
+                                                dict[ip].Send(arrMsg);
                                             }
 
                                             //释放reader的资源
@@ -832,7 +836,7 @@ namespace WirelessDoor_server_master
                     mycom.CommandText = sql;
                     mycom.Parameters.AddRange(new[] {
                                               new MySqlParameter("@roomState","预约"),
-                                              new MySqlParameter("roomName",roomName),
+                                              new MySqlParameter("@roomName",roomName),
                                               new MySqlParameter("@beginTime",beginTime),
                                               new MySqlParameter("@endTime",endTime)
                                               });
@@ -851,7 +855,7 @@ namespace WirelessDoor_server_master
                     mycom.CommandText = sql;
                     mycom.Parameters.AddRange(new[] {
                                               new MySqlParameter("@msgState","已处理"),
-                                              new MySqlParameter("roomName",roomName),
+                                              new MySqlParameter("@roomName",roomName),
                                               new MySqlParameter("@beginTime",beginTime),
                                               new MySqlParameter("@endTime",endTime)
                                               });
@@ -870,7 +874,7 @@ namespace WirelessDoor_server_master
                     mycom.CommandText = sql;
                     mycom.Parameters.AddRange(new[] {
                                               new MySqlParameter("@passwd",Key),
-                                              new MySqlParameter("roomName",roomName),
+                                              new MySqlParameter("@roomName",roomName),
                                               new MySqlParameter("@beginTime",beginTime),
                                               new MySqlParameter("@endTime",endTime)
                                               });
@@ -1015,14 +1019,27 @@ namespace WirelessDoor_server_master
                             //发送短信
                             SmsSend(reader.GetString(0), 2, Parmer);
                         }
+                        //释放reader的资源
+                        reader.Dispose();
+                        reader.Close();
+                        //transacter.Commit();//提交
+                        mycom.Dispose();//释放reader使用的资源，防止database is lock异常产生
+                        //transacter.Dispose();//释放reader使用的资源，防止database is lock异常产生
+
+                        //关闭数据库，防止数据库被锁定
+                        myconn.Dispose();
+                        myconn.Close();
                     }
                     catch (MySqlException se)
                     {
                         ShowMsg(se.ToString());
                         //MessageBox.Show(se.ToString());
+                        //关闭数据库，防止数据库被锁定
+                        myconn.Dispose();
+                        myconn.Close();
                     }
-
                     InitAllBox();
+                    ReLoadDataGridView();
                 }
                 else
                 {
@@ -1038,6 +1055,11 @@ namespace WirelessDoor_server_master
         /// <param name="e"></param>
         private void dgvReservation_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
+            bool auto_check = false;    //自动处理标志
+            MySqlConnection myconn = new MySqlConnection("Host =localhost" +
+                                                         ";Database=" + database +
+                                                         ";Username=" + username +
+                                                         ";Password=" + passwd + ";");
             int index = dgvReservation.CurrentRow.Index;     //获取选择行号
             if (dgvReservation.Rows[index].Cells[1].Value.ToString() == "未处理")
             {
@@ -1046,6 +1068,51 @@ namespace WirelessDoor_server_master
                 tbBeginTime.Text = dgvReservation.Rows[index].Cells[3].Value.ToString();
                 tbEndTime.Text = dgvReservation.Rows[index].Cells[4].Value.ToString();
                 rtReason.Text = dgvReservation.Rows[index].Cells[5].Value.ToString();
+                ShowMsg("读取信息成功");
+                try
+                {
+                    //连接数据库
+                    myconn.Open();
+                    //新建SQL指令
+                    MySqlCommand mycom = myconn.CreateCommand();
+                    string sql = string.Format("SELECT * FROM roominfo WHERE roomName=\"" + tbRoomName.Text + "\";");
+                    mycom.CommandText = sql;
+
+                    mycom.CommandType = CommandType.Text;
+                    //执行查询指令
+                    MySqlDataReader reader = mycom.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        if (reader.GetString(2) == "不可预约")
+                        {
+                            rtMessage.Text = "当前会议室不可预约";
+                            auto_check = true;
+                        }
+                    }
+
+                    //释放reader的资源
+                    reader.Dispose();
+                    reader.Close();
+                    //关闭数据库，防止数据库被锁定
+                    myconn.Dispose();
+                    myconn.Close();
+                    if (auto_check == true)
+                    {
+                        Thread.Sleep(1000);
+                        btCancel_Click(sender, e);
+                    }
+                }
+                catch (MySqlException sqle)
+                {
+                    ShowMsg(sqle.ToString());
+                    //关闭数据库，防止数据库被锁定
+                    myconn.Dispose();
+                    myconn.Close();
+                }
+            }
+            else if (dgvReservation.Rows[index].Cells[1].Value.ToString() == "已处理")
+            {
+                ShowMsg("此预约信息已处理");
             }
         }
 
@@ -1063,11 +1130,11 @@ namespace WirelessDoor_server_master
         }
 
         /// <summary>
-        /// 刷新申请信息
+        /// 刷新表格信息
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void 刷新申请信息ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void 刷新表格信息ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ReLoadDataGridView();
         }
@@ -1083,5 +1150,81 @@ namespace WirelessDoor_server_master
             rtLogo.Select(rtLogo.Text.Length, 0);//将光标设置到最末尾
             rtLogo.ScrollToCaret();  //将滚动条设置到光标处
         }
+
+        /// <summary>
+        /// 刷新会议室状态
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 刷新状态ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int rows = dgvRoom.SelectedRows.Count;      //获取选中总行数
+
+            for (int i = 0; i < rows; i++)
+            {
+                string deviceID = dgvRoom.SelectedRows[i].Cells[0].Value.ToString();
+                string deviceName = dgvRoom.SelectedRows[i].Cells[1].Value.ToString();
+                string ip = dgvRoom.SelectedRows[i].Cells[4].Value.ToString();
+                if (dgvRoom.Rows[i].Cells[3].Value.ToString() == "离线")
+                {
+                    ShowMsg("会议室" + deviceName + "已离线");
+                }
+                else if (dgvRoom.Rows[i].Cells[3].Value.ToString() != "离线")
+                {
+                    if (dict.ContainsKey(ip))
+                    {
+                        byte[] arrMsg = System.Text.Encoding.UTF8.GetBytes("@S1" + int.Parse(deviceID).ToString().PadLeft(4, '0') + "\r\n");
+                        reciveGet = false;
+                        dict[dgvRoom.Rows[i].Cells[4].Value.ToString()].Send(arrMsg);
+                        int timeout = 0;
+                        while (reciveGet == false && timeout < 5)
+                        {
+                            timeout++;
+                            Thread.Sleep(1000);
+                        }
+                        if (timeout > 5 && reciveGet == false)
+                        {
+                            UpdateRoom(int.Parse(deviceID), "离线", null);
+                            ShowMsg("会议室" + deviceName + "已离线");
+                        }
+                        else if (reciveGet == true)
+                            ShowMsg("会议室" + deviceName + "状态更新成功");
+                    }
+                    else
+                    {
+                        UpdateRoom(int.Parse(deviceID), "离线", null);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 表格右击事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void dgvRoom_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                if (e.RowIndex >= 0)
+                {
+                    //若行已是选中状态就不再进行设置
+                    if (dgvRoom.Rows[e.RowIndex].Selected == false)
+                    {
+                        dgvRoom.ClearSelection();
+                        dgvRoom.Rows[e.RowIndex].Selected = true;
+                    }
+                    if (dgvRoom.SelectedRows.Count == 1)
+                    {
+                        dgvRoom.CurrentCell = dgvRoom.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                    }
+                    //弹出操作菜单
+                    cmsdgvRoom.Show(MousePosition.X, MousePosition.Y);
+                }
+            }
+        }
+
+        
     }
 }
