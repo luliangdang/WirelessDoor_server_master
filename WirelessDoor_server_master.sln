@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirelessDoor_server_master", "WirelessDoor_server_master\WirelessDoor_server_master.csproj", "{38413A95-3177-4553-92E8-86A9755C3F72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "智能会议室管理系统", "WirelessDoor_server_master\智能会议室管理系统.csproj", "{38413A95-3177-4553-92E8-86A9755C3F72}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{66BAD6DF-4E7F-42A2-9DC4-339D501D3473}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,8 @@ Global
 		{38413A95-3177-4553-92E8-86A9755C3F72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38413A95-3177-4553-92E8-86A9755C3F72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38413A95-3177-4553-92E8-86A9755C3F72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66BAD6DF-4E7F-42A2-9DC4-339D501D3473}.Debug|Any CPU.ActiveCfg = Debug
+		{66BAD6DF-4E7F-42A2-9DC4-339D501D3473}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

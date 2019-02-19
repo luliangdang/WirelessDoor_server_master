@@ -47,7 +47,7 @@ namespace WirelessDoor_server_master
         //短信发送appid
         int appid = 1400178112;
         string appkey = "6402f72c5c2d15fac7f124d78d6f4759";
-        int[] templateId = { 265637, 270334, 265636, 266224 };//注册，预约成功，失败，提醒
+        int[] templateId = { 265637, 270334, 265636, 266224, 280196 };//注册，预约成功，失败，提醒，报警
         string smsSign = "会易云";
 
         //数据接收标志
@@ -458,42 +458,61 @@ namespace WirelessDoor_server_master
                             string deviceID = data.Substring(3, 4);
                             string userGet = data.Substring(7, 11);
                             string roomID = Convert.ToInt16(deviceID).ToString();
+                            ShowMsg("用户名：" + userGet);
 
                             int errorState = 0;
-                            //连接数据库
-                            myconn.Open();
-                            //新建SQL指令
-                            MySqlCommand mycom = myconn.CreateCommand();
-
-                            string sql = string.Format("SELECT * FROM reservationinfo WHERE roomID=\"" + roomID + "\" and authority=\"" + userGet +"\";");
-                            ShowMsg(sql);
-                            ShowMsg("用户名：" + userGet);
-                            mycom.CommandText = sql;
-
-                            mycom.CommandType = CommandType.Text;
-                            //执行查询指令
-                            MySqlDataReader reader = mycom.ExecuteReader();
-                            //ShowMsg("查询到数据有" + mycom.ExecuteScalar().ToString() + "行");
-
-                            while (reader.Read())
+                            if (userGet.IndexOf("unkown") != -1)
                             {
-                                if (reader.HasRows)
-                                {
-                                    errorState = CheckTime(reader.GetString(7), reader.GetString(8));
-                                    if (errorState == 0)
-                                        break;
-                                }
+                                errorState = 1;
+                                userGet = "00000000000";
+                                ShowMsg("用户尚未注册！");
                             }
+                            else
+                            {
+                                ShowMsg("已识别到用户" + userGet);
+                                //连接数据库
+                                myconn.Open();
+                                //新建SQL指令
+                                MySqlCommand mycom = myconn.CreateCommand();
 
-                            //释放reader的资源
-                            reader.Dispose();
-                            reader.Close();
-                            //关闭数据库，防止数据库被锁定
-                            myconn.Dispose();
-                            myconn.Close();
+                                string sql = string.Format("SELECT * FROM reservationinfo WHERE roomID=\"" + roomID + "\" and authority=\"" + userGet + "\";");
+                                //ShowMsg(sql);
 
+                                mycom.CommandText = sql;
+
+                                mycom.CommandType = CommandType.Text;
+                                //执行查询指令
+                                MySqlDataReader reader = mycom.ExecuteReader();
+                                //ShowMsg("查询到数据有" + mycom.ExecuteScalar().ToString() + "行");
+
+                                while (reader.Read())
+                                {
+                                    if (reader.HasRows)
+                                    {
+                                        errorState = CheckTime(reader.GetString(7), reader.GetString(8), false);
+                                        if (errorState == 0)
+                                        {
+                                            ShowMsg("找到预约记录！");
+                                            string msgSend = "@S2" + deviceID + reader.GetString(8) + "2\r\n";
+                                            ShowMsg(msgSend);
+                                            arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
+                                            SendDevice(Convert.ToUInt16(deviceID), arrMsg);
+                                            Thread.Sleep(2000);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                //释放reader的资源
+                                reader.Dispose();
+                                reader.Close();
+                                //关闭数据库，防止数据库被锁定
+                                myconn.Dispose();
+                                myconn.Close();
+                            }
+                            
                             arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + userGet + errorState.ToString() + "OK\r\n");
-                            SendDevice(Convert.ToUInt16(deviceID),arrMsg);
+                            SendDevice(Convert.ToUInt16(deviceID), arrMsg);
                             break;
                         }
                     case 'D':           //硬件端
@@ -505,11 +524,16 @@ namespace WirelessDoor_server_master
                                 case 1:     //联机回复
                                     {
                                         reciveGet = true;
-										UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+                                        
+                                        ShowMsg("会议室" + dgvRoom.Rows[Convert.ToUInt16(deviceID)-1].Cells[1].Value.ToString() + "状态更新成功");
+                                        UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+                                        arrMsg = System.Text.Encoding.UTF8.GetBytes("@S2" + deviceID + System.DateTime.Now.ToString("yyyyMMddHHmmss") + "1\r\n");
+                                        dict[ip].Send(arrMsg);
                                         break;
                                     }
                                 case 2:     //设定时间回复
                                     {
+                                        reciveGet = true;
                                         UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
                                         break;
                                     }
@@ -539,8 +563,13 @@ namespace WirelessDoor_server_master
                                                 if (reader.HasRows)
                                                 {
                                                     string userID = reader.GetString(5);
-                                                    int res = CheckTime(reader.GetString(7), reader.GetString(8));
+                                                    int res = CheckTime(reader.GetString(7), reader.GetString(8), true);
                                                     string msgSend = "@S" + CMD.ToString() + deviceID + userID + res.ToString() + "\r\n";
+                                                    ShowMsg(msgSend);
+                                                    arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
+                                                    dict[ip].Send(arrMsg);
+                                                    Thread.Sleep(2000);
+                                                    msgSend = "@S2" + deviceID + reader.GetString(8) + "2\r\n";
                                                     ShowMsg(msgSend);
                                                     arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
                                                     dict[ip].Send(arrMsg);
@@ -562,6 +591,38 @@ namespace WirelessDoor_server_master
                                         }
                                         break;
                                     }
+                                case 5:
+                                    {
+                                        UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+                                        
+                                        myconn.Open();
+                                        //新建SQL指令
+                                        MySqlCommand mycom = myconn.CreateCommand();
+
+                                        deviceID = Convert.ToUInt16(deviceID).ToString();
+
+                                        string sql = string.Format("SELECT roomname FROM roominfo WHERE roomID=\"" + deviceID + "\";");
+                                        mycom.CommandText = sql;
+
+                                        mycom.CommandType = CommandType.Text;
+                                        //执行查询指令
+                                        MySqlDataReader reader = mycom.ExecuteReader();
+                                        if (reader.Read())
+                                        {
+                                            string[] Parmer = new string[1];
+                                            Parmer[0] = reader[0].ToString();
+                                            SmsSend("18323832890", 4, Parmer);
+                                        }
+
+                                        //释放reader的资源
+                                        reader.Dispose();
+                                        reader.Close();
+                                        //关闭数据库，防止数据库被锁定
+                                        myconn.Dispose();
+                                        myconn.Close();
+                                        
+                                        break;
+                                    }
                             }
                             break;
                         }
@@ -579,17 +640,22 @@ namespace WirelessDoor_server_master
         /// </summary>
         /// <param name="getTime"></param>
         /// <returns></returns>
-        private int CheckTime(string Time1, string Time2)
+        private int CheckTime(string Time1, string Time2, bool code)
         {
             int errorState = 0;
-
-            if (DateTime.Compare(Convert.ToDateTime(Time1), DateTime.Now) > 10)
+            string time1 = Time1.Substring(0, 4) + '-' + Time1.Substring(4, 2) + '-' + Time1.Substring(6, 2) + ' ' + Time1.Substring(8, 2) + ':' + Time1.Substring(10, 2);
+            string time2 = Time2.Substring(0, 4) + '-' + Time2.Substring(4, 2) + '-' + Time2.Substring(6, 2) + ' ' + Time2.Substring(8, 2) + ':' + Time2.Substring(10, 2);
+            if (DateTime.Compare(Convert.ToDateTime(time1), DateTime.Now) > 10)
             {
                 errorState = 3;
             }
-            else if (DateTime.Compare(Convert.ToDateTime(Time1), DateTime.Now) < 0)
+            else if (DateTime.Compare(Convert.ToDateTime(time2), DateTime.Now) < 0 && code == false)
             {
                 errorState = 2;
+            }
+            else if (DateTime.Compare(Convert.ToDateTime(time2), DateTime.Now) < 0 && code == true)
+            {
+                errorState = 4;
             }
             return errorState;
         }
@@ -678,6 +744,7 @@ namespace WirelessDoor_server_master
                 {
                     if (reader.HasRows)
                     {
+                        ShowMsg("发送数据到" + roomID.ToString());
                         dict[reader.GetString(0)].Send(msg);
                         int timeout = 0;
                         while (getFlag == false)
@@ -691,6 +758,7 @@ namespace WirelessDoor_server_master
                             }
                         }
                         getFlag = false;
+                        
                     }
                 }
 
@@ -896,17 +964,17 @@ namespace WirelessDoor_server_master
 
                     if (reader.Read())
                     {
-                        string timeBegin = tbBeginTime.Text.Substring(8, 2) + "日" +
-                                           tbBeginTime.Text.Substring(11, 2) + "时";
-                        string timeEnd = tbEndTime.Text.Substring(8, 2) + "日" +
-                                         tbEndTime.Text.Substring(11, 2) + "时";
-                        if (Convert.ToUInt16(tbBeginTime.Text.Substring(14, 2)) != 0)
+                        string timeBegin = tbBeginTime.Text.Substring(6, 2) + "日" +
+                                           tbBeginTime.Text.Substring(8, 2) + "时";
+                        string timeEnd = tbEndTime.Text.Substring(6, 2) + "日" +
+                                         tbEndTime.Text.Substring(8, 2) + "时";
+                        if (Convert.ToUInt16(tbBeginTime.Text.Substring(10, 2)) != 0)
                         {
-                            timeBegin = timeBegin + tbBeginTime.Text.Substring(14, 2) + "分";
+                            timeBegin = timeBegin + tbBeginTime.Text.Substring(10, 2) + "分";
                         }
-                        if (Convert.ToUInt16(tbEndTime.Text.Substring(14, 2)) != 0)
+                        if (Convert.ToUInt16(tbEndTime.Text.Substring(10, 2)) != 0)
                         {
-                            timeEnd = timeEnd + tbEndTime.Text.Substring(14, 2) + "分";
+                            timeEnd = timeEnd + tbEndTime.Text.Substring(10, 2) + "分";
                         }
                         string[] Parmer = new string[4];
                         Parmer[0] = string.Format(tbRoomName.Text);
@@ -1188,7 +1256,9 @@ namespace WirelessDoor_server_master
                             ShowMsg("会议室" + deviceName + "已离线");
                         }
                         else if (reciveGet == true)
-                            ShowMsg("会议室" + deviceName + "状态更新成功");
+                        {
+                            reciveGet = false;
+                        }
                     }
                     else
                     {
