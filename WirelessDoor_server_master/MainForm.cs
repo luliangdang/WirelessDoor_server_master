@@ -419,167 +419,201 @@ namespace WirelessDoor_server_master
                                                          ";Password=" + passwd + ";");
             string data = msg;
             //判别数据发送端身份
-            char remoteDevice = Convert.ToChar(data.Substring(1, 1));
-            int CMD = Convert.ToInt16(data.Substring(2, 1));
-            try
+            if (data.IndexOf('@') != -1)
             {
-                switch (remoteDevice)
+                char remoteDevice = Convert.ToChar(data.Substring(1, 1));
+                int CMD = Convert.ToInt16(data.Substring(2, 1));
+                try
                 {
-                    case 'P':           //PC端
-                        {
-                            /*
-                            switch (CMD)
+                    switch (remoteDevice)
+                    {
+                        case 'P':           //PC端
                             {
-                                case 1:         //预约请求
-                                    {
-                                        ReLoadDataGridView();
-                                        break;
-                                    }
-                                case 2:         //修改请求
-                                    {
-                                        break;
-                                    }
-                                case 3:         //取消请求
-                                    {
-                                        break;
-                                    }
-                                default:    break;
-                            }
-                            */
-                            string userGet = data.Substring(7, 11);
-                            arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + userGet + "OK\r\n");
-                            dict[ip].Send(arrMsg);
-                            Thread.Sleep(2000);
-                            ReLoadDataGridView();
-                            break;
-                        }
-                    case 'R':           //树莓派端
-                        {
-                            string deviceID = data.Substring(3, 4);
-                            string userGet = data.Substring(7, 11);
-                            string roomID = Convert.ToInt16(deviceID).ToString();
-                            ShowMsg("用户名：" + userGet);
-
-                            int errorState = 0;
-                            if (userGet.IndexOf("unkown") != -1)
-                            {
-                                errorState = 1;
-                                userGet = "00000000000";
-                                ShowMsg("用户尚未注册！");
-                            }
-                            else
-                            {
-                                ShowMsg("已识别到用户" + userGet);
-                                //连接数据库
-                                myconn.Open();
-                                //新建SQL指令
-                                MySqlCommand mycom = myconn.CreateCommand();
-
-                                string sql = string.Format("SELECT * FROM reservationinfo WHERE roomID=\"" + roomID + "\" and authority=\"" + userGet + "\";");
-                                //ShowMsg(sql);
-
-                                mycom.CommandText = sql;
-
-                                mycom.CommandType = CommandType.Text;
-                                //执行查询指令
-                                MySqlDataReader reader = mycom.ExecuteReader();
-                                //ShowMsg("查询到数据有" + mycom.ExecuteScalar().ToString() + "行");
-
-                                while (reader.Read())
+                                /*
+                                switch (CMD)
                                 {
-                                    if (reader.HasRows)
-                                    {
-                                        errorState = CheckTime(reader.GetString(7), reader.GetString(8), false);
-                                        if (errorState == 0)
+                                    case 1:         //预约请求
                                         {
-                                            ShowMsg("找到预约记录！");
-                                            string msgSend = "@S2" + deviceID + reader.GetString(8) + "2\r\n";
-                                            ShowMsg(msgSend);
-                                            arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
-                                            SendDevice(Convert.ToUInt16(deviceID), arrMsg);
-                                            Thread.Sleep(2000);
+                                            ReLoadDataGridView();
                                             break;
                                         }
+                                    case 2:         //修改请求
+                                        {
+                                            break;
+                                        }
+                                    case 3:         //取消请求
+                                        {
+                                            break;
+                                        }
+                                    default:    break;
+                                }
+                                */
+                                string userGet = data.Substring(7, 11);
+                                arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + userGet + "OK\r\n");
+                                dict[ip].Send(arrMsg);
+                                Thread.Sleep(2000);
+                                ReLoadDataGridView();
+                                break;
+                            }
+                        case 'R':           //树莓派端
+                            {
+                                string deviceID = data.Substring(3, 4);
+                                string userGet = data.Substring(7, 11);
+                                string roomID = Convert.ToInt16(deviceID).ToString();
+                                ShowMsg("用户名：" + userGet);
+
+                                int errorState = 0;
+                                if (userGet.IndexOf("unkown") != -1)
+                                {
+                                    errorState = 1;
+                                    userGet = "00000000000";
+                                    ShowMsg("用户尚未注册！");
+                                }
+                                else
+                                {
+                                    ShowMsg("已识别到用户" + userGet);
+                                    //连接数据库
+                                    myconn.Open();
+                                    //新建SQL指令
+                                    MySqlCommand mycom = myconn.CreateCommand();
+
+                                    string sql = string.Format("SELECT * FROM reservationinfo WHERE roomID=\"" + roomID + "\" and authority=\"" + userGet + "\";");
+                                    //ShowMsg(sql);
+
+                                    mycom.CommandText = sql;
+
+                                    mycom.CommandType = CommandType.Text;
+                                    //执行查询指令
+                                    MySqlDataReader reader = mycom.ExecuteReader();
+                                    //ShowMsg("查询到数据有" + mycom.ExecuteScalar().ToString() + "行");
+
+                                    while (reader.Read())
+                                    {
+                                        if (reader.HasRows)
+                                        {
+                                            errorState = CheckTime(reader.GetString(7), reader.GetString(8), false);
+                                            if (errorState == 0)
+                                            {
+                                                ShowMsg("找到预约记录！");
+                                                string msgSend = "@S2" + deviceID + reader.GetString(8) + "2\r\n";
+                                                ShowMsg(msgSend);
+                                                arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
+                                                SendDevice(Convert.ToUInt16(deviceID), arrMsg);
+                                                Thread.Sleep(2000);
+                                                break;
+                                            }
+                                        }
                                     }
+
+                                    //释放reader的资源
+                                    reader.Dispose();
+                                    reader.Close();
+                                    //关闭数据库，防止数据库被锁定
+                                    myconn.Dispose();
+                                    myconn.Close();
                                 }
 
-                                //释放reader的资源
-                                reader.Dispose();
-                                reader.Close();
-                                //关闭数据库，防止数据库被锁定
-                                myconn.Dispose();
-                                myconn.Close();
+                                arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + userGet + errorState.ToString() + "OK\r\n");
+                                SendDevice(Convert.ToUInt16(deviceID), arrMsg);
+                                break;
                             }
-                            
-                            arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + userGet + errorState.ToString() + "OK\r\n");
-                            SendDevice(Convert.ToUInt16(deviceID), arrMsg);
-                            break;
-                        }
-                    case 'D':           //硬件端
-                        {
-                            string deviceID = data.Substring(3, 4);
-                            getFlag = true;
-                            switch (CMD)
+                        case 'D':           //硬件端
                             {
-                                case 1:     //联机回复
-                                    {
-                                        reciveGet = true;
-                                        
-                                        ShowMsg("会议室" + dgvRoom.Rows[Convert.ToUInt16(deviceID)-1].Cells[1].Value.ToString() + "状态更新成功");
-                                        UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
-                                        arrMsg = System.Text.Encoding.UTF8.GetBytes("@S2" + deviceID + System.DateTime.Now.ToString("yyyyMMddHHmmss") + "1\r\n");
-                                        dict[ip].Send(arrMsg);
-                                        break;
-                                    }
-                                case 2:     //设定时间回复
-                                    {
-                                        reciveGet = true;
-                                        UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
-                                        break;
-                                    }
-                                case 3:     //开门回复
-                                    {
-                                        UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
-
-                                        if (data.Length > 11)
+                                string deviceID = data.Substring(3, 4);
+                                getFlag = true;
+                                switch (CMD)
+                                {
+                                    case 1:     //联机回复
                                         {
-                                            string getPasswd = data.Substring(7, 6);
-                                            string roomID = Convert.ToUInt16(deviceID).ToString();
-                                            //连接数据库
+                                            reciveGet = true;
+
+                                            ShowMsg("会议室" + dgvRoom.Rows[Convert.ToUInt16(deviceID) - 1].Cells[1].Value.ToString() + "状态更新成功");
+                                            UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+                                            arrMsg = System.Text.Encoding.UTF8.GetBytes("@S2" + deviceID + System.DateTime.Now.ToString("yyyyMMddHHmmss") + "1\r\n");
+                                            dict[ip].Send(arrMsg);
+                                            break;
+                                        }
+                                    case 2:     //设定时间回复
+                                        {
+                                            reciveGet = true;
+                                            UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+                                            break;
+                                        }
+                                    case 3:     //开门回复
+                                        {
+                                            UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+
+                                            if (data.Length > 11)
+                                            {
+                                                string getPasswd = data.Substring(7, 6);
+                                                string roomID = Convert.ToUInt16(deviceID).ToString();
+                                                //连接数据库
+                                                myconn.Open();
+                                                //新建SQL指令
+                                                MySqlCommand mycom = myconn.CreateCommand();
+
+                                                string sql = string.Format("SELECT * FROM reservationinfo WHERE passwd=\"" + getPasswd + "\";");
+                                                mycom.CommandText = sql;
+
+                                                mycom.CommandType = CommandType.Text;
+                                                //执行查询指令
+                                                MySqlDataReader reader = mycom.ExecuteReader();
+                                                //ShowMsg("查询到数据有" + mycom.ExecuteScalar().ToString() + "行");
+
+                                                if (reader.Read())
+                                                {
+                                                    if (reader.HasRows)
+                                                    {
+                                                        string userID = reader.GetString(5);
+                                                        int res = CheckTime(reader.GetString(7), reader.GetString(8), true);
+                                                        string msgSend = "@S" + CMD.ToString() + deviceID + userID + res.ToString() + "\r\n";
+                                                        ShowMsg(msgSend);
+                                                        arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
+                                                        dict[ip].Send(arrMsg);
+                                                        Thread.Sleep(2000);
+                                                        msgSend = "@S2" + deviceID + reader.GetString(8) + "2\r\n";
+                                                        ShowMsg(msgSend);
+                                                        arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
+                                                        dict[ip].Send(arrMsg);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + "000000000002\r\n");
+                                                    ShowMsg(arrMsg.ToString());
+                                                    dict[ip].Send(arrMsg);
+                                                }
+
+                                                //释放reader的资源
+                                                reader.Dispose();
+                                                reader.Close();
+                                                //关闭数据库，防止数据库被锁定
+                                                myconn.Dispose();
+                                                myconn.Close();
+                                            }
+                                            break;
+                                        }
+                                    case 5:
+                                        {
+                                            UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
+
                                             myconn.Open();
                                             //新建SQL指令
                                             MySqlCommand mycom = myconn.CreateCommand();
 
-                                            string sql = string.Format("SELECT * FROM reservationinfo WHERE passwd=\"" + getPasswd + "\";");
+                                            deviceID = Convert.ToUInt16(deviceID).ToString();
+
+                                            string sql = string.Format("SELECT roomname FROM roominfo WHERE roomID=\"" + deviceID + "\";");
                                             mycom.CommandText = sql;
 
                                             mycom.CommandType = CommandType.Text;
                                             //执行查询指令
                                             MySqlDataReader reader = mycom.ExecuteReader();
-                                            //ShowMsg("查询到数据有" + mycom.ExecuteScalar().ToString() + "行");
-
                                             if (reader.Read())
                                             {
-                                                if (reader.HasRows)
-                                                {
-                                                    string userID = reader.GetString(5);
-                                                    int res = CheckTime(reader.GetString(7), reader.GetString(8), true);
-                                                    string msgSend = "@S" + CMD.ToString() + deviceID + userID + res.ToString() + "\r\n";
-                                                    ShowMsg(msgSend);
-                                                    arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
-                                                    dict[ip].Send(arrMsg);
-                                                    Thread.Sleep(2000);
-                                                    msgSend = "@S2" + deviceID + reader.GetString(8) + "2\r\n";
-                                                    ShowMsg(msgSend);
-                                                    arrMsg = System.Text.Encoding.UTF8.GetBytes(msgSend);
-                                                    dict[ip].Send(arrMsg);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                arrMsg = System.Text.Encoding.UTF8.GetBytes("@S" + CMD.ToString() + deviceID + "000000000002\r\n");
-                                                ShowMsg(arrMsg.ToString());
-                                                dict[ip].Send(arrMsg);
+                                                string[] Parmer = new string[1];
+                                                Parmer[0] = reader[0].ToString();
+                                                SmsSend("18323832890", 4, Parmer);
                                             }
 
                                             //释放reader的资源
@@ -588,50 +622,19 @@ namespace WirelessDoor_server_master
                                             //关闭数据库，防止数据库被锁定
                                             myconn.Dispose();
                                             myconn.Close();
+
+                                            break;
                                         }
-                                        break;
-                                    }
-                                case 5:
-                                    {
-                                        UpdateRoom(Convert.ToUInt16(deviceID), "在线", ip);
-                                        
-                                        myconn.Open();
-                                        //新建SQL指令
-                                        MySqlCommand mycom = myconn.CreateCommand();
-
-                                        deviceID = Convert.ToUInt16(deviceID).ToString();
-
-                                        string sql = string.Format("SELECT roomname FROM roominfo WHERE roomID=\"" + deviceID + "\";");
-                                        mycom.CommandText = sql;
-
-                                        mycom.CommandType = CommandType.Text;
-                                        //执行查询指令
-                                        MySqlDataReader reader = mycom.ExecuteReader();
-                                        if (reader.Read())
-                                        {
-                                            string[] Parmer = new string[1];
-                                            Parmer[0] = reader[0].ToString();
-                                            SmsSend("18323832890", 4, Parmer);
-                                        }
-
-                                        //释放reader的资源
-                                        reader.Dispose();
-                                        reader.Close();
-                                        //关闭数据库，防止数据库被锁定
-                                        myconn.Dispose();
-                                        myconn.Close();
-                                        
-                                        break;
-                                    }
+                                }
+                                break;
                             }
-                            break;
-                        }
-                    default: break;
+                        default: break;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                ShowMsg(ex.ToString());
+                catch (Exception ex)
+                {
+                    ShowMsg(ex.ToString());
+                }
             }
         }
 

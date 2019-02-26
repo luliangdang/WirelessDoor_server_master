@@ -183,7 +183,6 @@
             // 
             this.dgvReservation.AllowUserToAddRows = false;
             this.dgvReservation.AllowUserToDeleteRows = false;
-            this.dgvReservation.AllowUserToOrderColumns = true;
             this.dgvReservation.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvReservation.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvReservation.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -486,19 +485,19 @@
             this.刷新表格信息ToolStripMenuItem,
             this.刷新状态ToolStripMenuItem1});
             this.cmsdgvRoom.Name = "cmsdgvRoom";
-            this.cmsdgvRoom.Size = new System.Drawing.Size(181, 70);
+            this.cmsdgvRoom.Size = new System.Drawing.Size(149, 48);
             // 
             // 刷新表格信息ToolStripMenuItem
             // 
             this.刷新表格信息ToolStripMenuItem.Name = "刷新表格信息ToolStripMenuItem";
-            this.刷新表格信息ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.刷新表格信息ToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.刷新表格信息ToolStripMenuItem.Text = "刷新表格信息";
             this.刷新表格信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新表格信息ToolStripMenuItem_Click);
             // 
             // 刷新状态ToolStripMenuItem1
             // 
             this.刷新状态ToolStripMenuItem1.Name = "刷新状态ToolStripMenuItem1";
-            this.刷新状态ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.刷新状态ToolStripMenuItem1.Size = new System.Drawing.Size(148, 22);
             this.刷新状态ToolStripMenuItem1.Text = "刷新状态";
             this.刷新状态ToolStripMenuItem1.Click += new System.EventHandler(this.刷新状态ToolStripMenuItem_Click);
             // 
