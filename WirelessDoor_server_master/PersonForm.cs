@@ -19,8 +19,7 @@ namespace WirelessDoor_server_master
         //数据库信息
         string database = "room";
         string username = "root";
-        //string passwd = "Dll960220";
-        string passwd = "LL960220";
+        string passwd = "********";
 
         public PersonForm()
         {
