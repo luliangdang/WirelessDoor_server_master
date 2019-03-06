@@ -41,12 +41,11 @@ namespace WirelessDoor_server_master
         //数据库信息
         string database = "room";
         string username = "root";
-        //string passwd = "Dll960220";
-        string passwd = "LL960220";
+        string passwd = "*******";
 
         //短信发送appid
-        int appid = 1400178112;
-        string appkey = "6402f72c5c2d15fac7f124d78d6f4759";
+        int appid = *********;
+        string appkey = "*******************";
         int[] templateId = { 265637, 270334, 265636, 266224, 280196 };//注册，预约成功，失败，提醒，报警
         string smsSign = "会易云";
 
